@@ -1,0 +1,37 @@
+{
+  "scripts": {
+    "test": "cross-env NODE_ENV=test mocha --recursive --timeout 3000",
+    "dev": "cross-env DEBUG=myapp:* npm start",
+    "start": "node server.js"
+  },
+  "name": "tbf12-sample",
+  "description": "",
+  "version": "1.0.0",
+  "main": "server.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "morgan": "~1.9.1"
+  },
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "cross-env": "^7.0.3",
+    "mocha": "^9.2.0",
+    "promise-test-helper": "^0.2.1",
+    "sinon": "^12.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoshimado/tbf12-sample.git"
+  },
+  "author": "hoshimado",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hoshimado/tbf12-sample/issues"
+  },
+  "homepage": "https://github.com/hoshimado/tbf12-sample#readme"
+}
