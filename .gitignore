@@ -1,5 +1,14 @@
-# Created by https://www.gitignore.io/api/windows
-# Edit at https://www.gitignore.io/?templates=windows
+# ----------------------------------------------------------------
+# For Windows System.
+
+# Created by https://www.toptal.com/developers/gitignore/api/batch,windows
+# Edit at https://www.toptal.com/developers/gitignore?templates=batch,windows
+
+### Batch ###
+# BatchFiles
+*.bat
+*.cmd
+*.btm
 
 ### Windows ###
 # Windows thumbnail cache files
@@ -27,8 +36,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.gitignore.io/api/windows
-
+# End of https://www.toptal.com/developers/gitignore/api/batch,windows
 
 
 ### Node.js ### 
