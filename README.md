@@ -1,15 +1,16 @@
-# 「AzureとGoogle、YahooでOpenID Connect連携を試す」本向けサンプルコード
+# 5章：Node.jsにてExpress.jsとPassport.js を用いて OpenID Connect連携するクライアント（Relying Party）を試作する方法
 
-掲載コードについては、完成しています。
-説明文については、暫定版です。一部、修正中があります。
+ローカルへ取得して展開後に、初回は次のコマンドを実行して
+必要なモジュールをインストールすることを、忘れずに実行してください。
 
-※リンク先はbranchです。
-※１～４章にサンプルコードはありません。
+* `npm install`を実行
 
-## ５章
+展開先のルートフォルダ（※`server.js`が置かれたフォルダ）で実行してください。
 
+なお、本書で解説した手順に従ってPassport-OpenID Connectライブラリをインストールした場合は、一部挙動が違う可能性があります（ライブラリ側の最新版における仕様変更のため）。
 
-## 付録
+本リポジトリでは、本書のためのサンプルアプロを作成した時点でのライブラリバージョンを明示的に指定してインストールする形式としておりますので、上述の「挙動が違う可能性」が気になる場合は、こちらのリポジトリを利用して「 `npm i` 」するか、もしくは、P53の「§5.4 Passport.jsとOIDC 向けの『ストラテジー』をインストールし、事前準備をする」でのインストールコマンドにて、バージョンを指定する以下の形式を利用ください。
 
-* [appendix-azure-express-mocha](https://github.com/hoshimado/tbf12-sample/tree/appendix-azure-express-mocha)
-
+```
+npm install passport passport-openidconnect@0.0.2 --save
+```
