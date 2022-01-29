@@ -61,9 +61,10 @@ var Instance4AzureOIDC = new OpenidConnectStrategy(
      * 引数は、node_modules\passport-openidconnect\lib\strategy.js のL220～を参照。
      * 指定した引数の数に応じて、返却してくれる。この例では最大数を取得している。
      * @param {*} issuer    idToken.iss
-     * @param {*} sub       idToken.sub
      * @param {*} profile   UserInfo EndoPointのレスポンス（._json）＋name周りを独自に取り出した形式
-     * @param {*} jwtClaims idToken
+     * @param {*} context   認証コンテキストに関する情報。acr, amr, auth_timeクレームがIDトークンに含まれる場合に抽出される（v0.1.0以降）
+     *                      ref. https://github.com/jaredhanson/passport-openidconnect/blob/master/CHANGELOG.md#010---2021-11-17
+     * @param {*} idToken
      * @param {*} accessToken 
      * @param {*} refreshToken 
      * @param {*} tokenResponse トークンエンドポイントが返却したレスポンスそのもの（idToken, accessToken等を含む）
@@ -73,11 +74,11 @@ var Instance4AzureOIDC = new OpenidConnectStrategy(
      * - https://www.passportjs.org/docs/configure/
      * @returns 上述のdone()の実行結果を返却する.
      */
-    function (
+     function (
       issuer,
-      sub,
       profile,
-      jwtClaims,
+      context,
+      idToken,
       accessToken,
       refreshToken,
       tokenResponse,
@@ -88,9 +89,9 @@ var Instance4AzureOIDC = new OpenidConnectStrategy(
       // ここでID tokenの検証を行う
       console.log("+++[Success Authenticate by Azure OIDC]+++");
       console.log("issuer: ", issuer);
-      console.log("sub: ", sub);
       console.log("profile: ", profile);
-      console.log("jwtClaims: ", jwtClaims);
+      console.log("context: ", context);
+      console.log("idToken: ", idToken);
       console.log("accessToken: ", accessToken);
       console.log("refreshToken: ", refreshToken);
       console.log("tokenResponse: ", tokenResponse);
@@ -113,7 +114,7 @@ var Instance4AzureOIDC = new OpenidConnectStrategy(
         },
         idToken: {
           token: tokenResponse.id_token,
-          claims: jwtClaims,
+          claims: idToken,
         },
       });
     }
@@ -220,7 +221,7 @@ router.use(
     console.log("+++ req.session.passport +++");
     console.log(req.session);
     console.log('[req.session.passport.user.profile]')
-    console.log(req.session.passport.user.profile);
+    console.log(JSON.stringify(req.session.passport.user.profile));
     console.log("----------------------------");
 
     if( 
