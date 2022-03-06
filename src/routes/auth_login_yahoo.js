@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var path = require('path');
 var createError = require("http-errors");
+var createInstance4OpenidConnectStrategy = require('./auth_oidc_common.js').createInstance4OpenidConnectStrategy;
 
 
 /**
@@ -10,6 +11,7 @@ var createError = require("http-errors");
  * 
  */
 var THIS_ROUTE_PATH = 'auth-yahoo'; // ※本サンプルでは「どのOIDCに対して？」の区別にも利用。
+var THIS_STRATEGY_NAME = 'openidconnect-yahoo'; // passport.use()で指定するOIDC-Strategyの識別子
 var OIDC_CONFIG = {
   ISSUER        : process.env.YAHOO_ISSUER,
   AUTH_URL      : process.env.YAHOO_AUTH_URL,
@@ -20,7 +22,13 @@ var OIDC_CONFIG = {
   CLIENT_SECRET : process.env.YAHOO_CLIENT_SECRET,
   RESPONSE_TYPE : 'code', // Authentication Flow、を指定
   SCOPE : 'profile email', // 「openid 」はデフォルトで「passport-openidconnect」側が付与するので、指定不要。
-  REDIRECT_URI_DIRECTORY : 'callback' // 「THIS_ROUTE_PATH + この値」が、OIDCプロバイダーへ登録した「コールバック先のURL」になるので注意。
+  REDIRECT_URI_DIRECTORY : 'callback', // 「THIS_ROUTE_PATH + この値」が、OIDCプロバイダーへ登録した「コールバック先のURL」になるので注意。
+  PROTOCOL_AND_DOMAIN : (process.env.PROTOCOL_AND_DOMAIN) 
+    ? process.env.PROTOCOL_AND_DOMAIN 
+    : ''
+    // 公開時＝httpsプロトコル動作時は、明示的にドメインを指定する必要がある。
+    // 例えば「PROTOCOL_AND_DOMAIN=https://XXXX.azurewebsites.net」など。
+    // ローカル動作時は上記の環境変数「PROTOCOL_AND_DOMAIN」は指定不要。
 };
 // https://developer.yahoo.co.jp/yconnect/v2/
 
@@ -40,80 +48,12 @@ var OIDC_CONFIG = {
 
 // OIDCの認可手続きを行うためのミドルウェアとしてのpassportをセットアップ。-------------------------------------------------
 var OpenidConnectStrategy = require("passport-openidconnect").Strategy;
-var Instance4YahooOIDC = new OpenidConnectStrategy(
-    {
-      issuer:           OIDC_CONFIG.ISSUER,
-      authorizationURL: OIDC_CONFIG.AUTH_URL,
-      tokenURL:         OIDC_CONFIG.TOKEN_URL,
-      userInfoURL:      OIDC_CONFIG.USERINFO_URL,
-      clientID:     OIDC_CONFIG.CLIENT_ID,
-      clientSecret: OIDC_CONFIG.CLIENT_SECRET,
-      callbackURL:  THIS_ROUTE_PATH + '/' + OIDC_CONFIG.REDIRECT_URI_DIRECTORY,
-      scope:        OIDC_CONFIG.SCOPE // ['profile' 'email]でも'profile email'でもどちらでも内部で自動変換してくれる。
-    },
-    /**
-     * 第一引数のパラメータでOIDCの認証に成功（UserInfoまで取得成功）時にcallbackされる関数
-     * 引数は、node_modules\passport-openidconnect\lib\strategy.js のL220～を参照。
-     * 指定した引数の数に応じて、返却してくれる。この例では最大数を取得している。
-     * @param {*} issuer    idToken.iss
-     * @param {*} profile   UserInfo EndoPointのレスポンス（._json）＋name周りを独自に取り出した形式
-     * @param {*} context   認証コンテキストに関する情報。acr, amr, auth_timeクレームがIDトークンに含まれる場合に抽出される（v0.1.0以降）
-     *                      ref. https://github.com/jaredhanson/passport-openidconnect/blob/master/CHANGELOG.md#010---2021-11-17
-     * @param {*} idToken
-     * @param {*} accessToken 
-     * @param {*} refreshToken 
-     * @param {*} tokenResponse トークンエンドポイントが返却したレスポンスそのもの（idToken, accessToken等を含む）
-     * @param {*} done 「取得した資格情報が有効な場合に、このverify()を呼び出して通知する」のがPassport.jsの仕様
-     * > If the credentials are valid, the verify callback invokes done 
-     * > to supply Passport with the user that authenticated.
-     * - https://www.passportjs.org/docs/configure/
-     * @returns 上述のdone()の実行結果を返却する.
-     */
-     function (
-      issuer,
-      profile,
-      context,
-      idToken,
-      accessToken,
-      refreshToken,
-      tokenResponse,
-      done
-    ) {
-      // [For Debug]
-      // 認証成功したらこの関数が実行される
-      // ここでID tokenの検証を行う
-      console.log("+++[Success Authenticate by Yahoo OIDC]+++");
-      console.log("issuer: ", issuer);
-      console.log("profile: ", profile);
-      console.log("context: ", context);
-      console.log("idToken: ", idToken);
-      console.log("accessToken: ", accessToken);
-      console.log("refreshToken: ", refreshToken);
-      console.log("tokenResponse: ", tokenResponse);
-      console.log("------[End of displaying for debug]------");
-
-      // セッションを有効にしている場合、この「done()」の第二引数に渡された値が、
-      // 「passport.serializeUser( function(user, done){} )」のuserの引数として
-      // 渡される、、、はず（動作からはそのように見える）だが、その旨が掛かれた
-      // （serializeUserの仕様）ドキュメントには辿り着けず。。。at 2022-01-08
-      // 一応、「../app.js」側の「passport.serializeUser()」のコメントも参照のこと。
-      return done(null, {
-        title : 'OIDC by Yahoo',
-        typeName : THIS_ROUTE_PATH,
-        profile: profile,
-        accessToken: {
-          token: accessToken,
-          scope: tokenResponse.scope,
-          token_type: tokenResponse.token_type,
-          expires_in: tokenResponse.expires_in,
-        },
-        idToken: {
-          token: tokenResponse.id_token,
-          claims: idToken,
-        },
-      });
-    }
+var Instance4YahooOIDC = createInstance4OpenidConnectStrategy(
+  OpenidConnectStrategy,
+  OIDC_CONFIG,
+  THIS_ROUTE_PATH
 );
+
 
 /**
  * Strategies used for authorization are the same as those used for authentication. 
@@ -126,14 +66,14 @@ var Instance4YahooOIDC = new OpenidConnectStrategy(
  * の、大分下の方に、上述の「a named strategy can be used」の記載がある。
 */
 var passport = require("passport");
-passport.use('openidconnect-yahoo', Instance4YahooOIDC);
+passport.use(THIS_STRATEGY_NAME, Instance4YahooOIDC);
 
 
 
 // ログイン要求を受けて、OIDCの認可プロバイダーへリダイレクト。-------------------------------------------------
 router.get(
   '/login', 
-  passport.authenticate("openidconnect-yahoo")
+  passport.authenticate(THIS_STRATEGY_NAME)
 );
 
 
@@ -142,7 +82,7 @@ router.get(
 // ※この時、passport.authenticate() は、渡されてくるクエリーによって動作を変更する仕様。
 router.get(
   '/' + OIDC_CONFIG.REDIRECT_URI_DIRECTORY,
-  passport.authenticate("openidconnect-yahoo", {
+  passport.authenticate(THIS_STRATEGY_NAME, {
     failureRedirect: "loginfail",
   }),
   function (req, res) {
