@@ -59,7 +59,7 @@ exports.createInstance4OpenidConnectStrategy = function (OpenidConnectStrategy, 
             // [For Debug]
             // 認証成功したらこの関数が実行される
             // ここでID tokenの検証を行う
-            console.log("+++[Success Authenticate by Azure OIDC]+++");
+            console.log("+++[Success Authenticate by OIDC for " + THIS_ROUTE_PATH + "]+++");
             console.log("issuer: ", issuer);
             console.log("profile: ", uiProfile);
             console.log("idTokenParts", idProfile);
@@ -80,7 +80,7 @@ exports.createInstance4OpenidConnectStrategy = function (OpenidConnectStrategy, 
             // （serializeUserの仕様）ドキュメントには辿り着けず。。。at 2022-01-08
             // 一応、「../app.js」側の「passport.serializeUser()」のコメントも参照のこと。
             return done(null, {
-              title : 'OIDC by ' + THIS_ROUTE_PATH,
+              title : 'OIDC for ' + THIS_ROUTE_PATH,
               typeName : THIS_ROUTE_PATH,
               profile: uiProfile,
               accessToken: {
